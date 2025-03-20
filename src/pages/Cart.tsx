@@ -6,9 +6,12 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import CartItem from '../components/CartItem';
 import { useCart } from '@/hooks/useCart';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity } = useCart();
+  const { user } = useAuth();
   
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shipping = 12.99;
@@ -53,7 +56,7 @@ const Cart = () => {
               <div className="bg-white rounded-lg shadow-md p-6">
                 {cartItems.map(item => (
                   <CartItem 
-                    key={item.id}
+                    key={`${item.id}-${item.productType}-${item.size}`}
                     {...item}
                     onRemove={() => removeFromCart(item.id)}
                     onUpdateQuantity={(quantity) => updateQuantity(item.id, quantity)}
@@ -82,15 +85,30 @@ const Cart = () => {
                   </div>
                 </div>
                 
-                <Link 
-                  to="/checkout" 
-                  className="btn-primary w-full flex items-center justify-center gap-2 py-3 mb-4"
-                >
-                  Proceed to Checkout
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
+                {user ? (
+                  <Link 
+                    to="/checkout" 
+                    className="btn-primary w-full flex items-center justify-center gap-2 py-3 mb-4"
+                  >
+                    Proceed to Checkout
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                ) : (
+                  <div className="space-y-4">
+                    <Link 
+                      to="/auth/login" 
+                      className="btn-primary w-full flex items-center justify-center gap-2 py-3"
+                    >
+                      Sign In to Checkout
+                    </Link>
+                    
+                    <p className="text-sm text-mystic-600 text-center">
+                      You need to be signed in to complete your purchase.
+                    </p>
+                  </div>
+                )}
                 
-                <Link to="/" className="text-mystic-700 hover:text-mystic-900 transition-colors text-center block">
+                <Link to="/" className="text-mystic-700 hover:text-mystic-900 transition-colors text-center block mt-4">
                   Continue Shopping
                 </Link>
               </div>
