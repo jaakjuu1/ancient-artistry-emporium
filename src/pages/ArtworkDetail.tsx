@@ -5,6 +5,8 @@ import { ArrowLeft, ShoppingCart, Share2, Heart } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { cn } from '@/lib/utils';
+import { useCart } from '@/hooks/useCart';
+import { getVariantId } from '@/utils/printful';
 
 // Mock data for demonstration
 const artworks = [
@@ -57,6 +59,7 @@ const artworks = [
 const ArtworkDetail = () => {
   const { id } = useParams<{ id: string }>();
   const artwork = artworks.find(a => a.id === Number(id));
+  const { addToCart } = useCart();
   
   const [selectedMaterial, setSelectedMaterial] = useState(artwork?.materials[0] || "");
   const [selectedSize, setSelectedSize] = useState(artwork?.sizes[0] || "");
@@ -72,6 +75,38 @@ const ArtworkDetail = () => {
       </div>
     );
   }
+
+  const handleAddToCart = () => {
+    // Map selectedMaterial to productType for Printful
+    const productTypeMap: Record<string, string> = {
+      "Premium Archival Paper": "poster",
+      "Canvas": "canvas",
+      "Framed Print": "framed-print"
+    };
+    
+    // Map selectedSize to size for Printful
+    const sizeMap: Record<string, string> = {
+      "12×16\"": "small",
+      "18×24\"": "medium",
+      "24×36\"": "large"
+    };
+    
+    const productType = productTypeMap[selectedMaterial] || "poster";
+    const size = sizeMap[selectedSize] || "medium";
+    const variantId = getVariantId(productType, size);
+    
+    addToCart({
+      id: artwork.id,
+      title: artwork.title,
+      artist: artwork.artist,
+      price: artwork.price,
+      quantity: quantity,
+      image: artwork.image,
+      productType: productType,
+      variantId: variantId,
+      size: size
+    });
+  };
 
   return (
     <div className="min-h-screen">
@@ -192,7 +227,10 @@ const ArtworkDetail = () => {
                   </div>
                   
                   {/* Add to Cart Button */}
-                  <button className="btn-primary w-full flex items-center justify-center gap-2 py-3">
+                  <button 
+                    className="btn-primary w-full flex items-center justify-center gap-2 py-3"
+                    onClick={handleAddToCart}
+                  >
                     <ShoppingCart className="h-5 w-5" />
                     Add to Cart
                   </button>

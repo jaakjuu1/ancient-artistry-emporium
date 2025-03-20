@@ -1,46 +1,14 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ShoppingCart } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import CartItem from '../components/CartItem';
-import { cn } from '@/lib/utils';
-
-// Mock data for demonstration
-const initialCartItems = [
-  {
-    id: 1,
-    title: "Vitruvian Man",
-    artist: "Leonardo da Vinci",
-    price: 89.99,
-    quantity: 1,
-    image: "https://images.unsplash.com/photo-1569779213435-ba3167ecfcbe?w=200&auto=format&fit=crop",
-    productType: "Canvas Print, 18×24\""
-  },
-  {
-    id: 3,
-    title: "Book of the Fixed Stars",
-    artist: "Al-Sufi",
-    price: 99.99,
-    quantity: 2,
-    image: "https://images.unsplash.com/photo-1447433589675-4aaa569f3e05?w=200&auto=format&fit=crop",
-    productType: "Framed Print, 24×36\""
-  }
-];
+import { useCart } from '@/hooks/useCart';
 
 const Cart = () => {
-  const [cartItems, setCartItems] = useState(initialCartItems);
-  
-  const handleRemoveItem = (id: number) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
-  };
-  
-  const handleUpdateQuantity = (id: number, quantity: number) => {
-    setCartItems(cartItems.map(item => 
-      item.id === id ? { ...item, quantity } : item
-    ));
-  };
+  const { cartItems, removeFromCart, updateQuantity } = useCart();
   
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shipping = 12.99;
@@ -87,8 +55,8 @@ const Cart = () => {
                   <CartItem 
                     key={item.id}
                     {...item}
-                    onRemove={handleRemoveItem}
-                    onUpdateQuantity={handleUpdateQuantity}
+                    onRemove={() => removeFromCart(item.id)}
+                    onUpdateQuantity={(quantity) => updateQuantity(item.id, quantity)}
                   />
                 ))}
               </div>
@@ -114,10 +82,13 @@ const Cart = () => {
                   </div>
                 </div>
                 
-                <button className="btn-primary w-full flex items-center justify-center gap-2 py-3 mb-4">
+                <Link 
+                  to="/checkout" 
+                  className="btn-primary w-full flex items-center justify-center gap-2 py-3 mb-4"
+                >
                   Proceed to Checkout
                   <ArrowRight className="h-4 w-4" />
-                </button>
+                </Link>
                 
                 <Link to="/" className="text-mystic-700 hover:text-mystic-900 transition-colors text-center block">
                   Continue Shopping
