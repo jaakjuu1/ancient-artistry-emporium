@@ -17,6 +17,8 @@ export interface AutomationWorkflow {
   lastRun: string;
   nextRun: string;
   status: 'active' | 'inactive' | 'error';
+  webhookUrl?: string;
+  schedule?: string;
 }
 
 // Example n8n workflow configurations
@@ -50,7 +52,9 @@ export const automationWorkflows: AutomationWorkflow[] = [
     description: "Discovers new mystical and historical artworks from public domain sources",
     lastRun: "2023-07-15T09:30:00Z",
     nextRun: "2023-07-22T09:30:00Z",
-    status: "active"
+    status: "active",
+    webhookUrl: "https://n8n.example.com/webhook/art-sourcing",
+    schedule: "0 0 * * 0" // Weekly on Sundays
   },
   {
     id: "artist-research",
@@ -58,7 +62,9 @@ export const automationWorkflows: AutomationWorkflow[] = [
     description: "Researches artists and creates detailed biographies and historical context",
     lastRun: "2023-07-16T14:45:00Z",
     nextRun: "2023-07-23T14:45:00Z",
-    status: "active"
+    status: "active",
+    webhookUrl: "https://n8n.example.com/webhook/artist-research",
+    schedule: "0 0 * * 1" // Weekly on Mondays
   },
   {
     id: "product-creation",
@@ -66,7 +72,9 @@ export const automationWorkflows: AutomationWorkflow[] = [
     description: "Creates product listings on Printful for discovered artworks",
     lastRun: "2023-07-17T11:15:00Z",
     nextRun: "2023-07-24T11:15:00Z",
-    status: "active"
+    status: "active",
+    webhookUrl: "https://n8n.example.com/webhook/product-creation",
+    schedule: "0 0 * * 2" // Weekly on Tuesdays
   },
   {
     id: "social-media",
@@ -74,7 +82,9 @@ export const automationWorkflows: AutomationWorkflow[] = [
     description: "Automatically posts new artworks and products to social media channels",
     lastRun: "2023-07-18T16:30:00Z",
     nextRun: "2023-07-25T16:30:00Z",
-    status: "inactive"
+    status: "inactive",
+    webhookUrl: "https://n8n.example.com/webhook/social-media",
+    schedule: "0 0 * * 3" // Weekly on Wednesdays
   }
 ];
 
@@ -319,5 +329,68 @@ export const triggerWorkflowRun = async (id: string): Promise<{ success: boolean
         message: `Workflow ${id} triggered successfully`
       });
     }, 1000);
+  });
+};
+
+// New functions for enhancing n8n workflow management
+
+export const addNewWorkflow = async (workflow: AutomationWorkflow): Promise<AutomationWorkflow> => {
+  // In a real implementation, this would call your n8n instance API to create a new workflow
+  return new Promise((resolve) => {
+    // Add workflow to the array (simulating a database save)
+    automationWorkflows.push(workflow);
+    
+    setTimeout(() => {
+      resolve(workflow);
+    }, 1000);
+  });
+};
+
+export const updateWorkflowWebhook = async (id: string, webhookUrl: string): Promise<AutomationWorkflow> => {
+  // In a real implementation, this would update the webhook URL in your n8n instance
+  return new Promise((resolve, reject) => {
+    const workflow = automationWorkflows.find(w => w.id === id);
+    
+    if (workflow) {
+      workflow.webhookUrl = webhookUrl;
+      setTimeout(() => resolve(workflow), 500);
+    } else {
+      reject(new Error("Workflow not found"));
+    }
+  });
+};
+
+export const updateWorkflowSchedule = async (id: string, schedule: string): Promise<AutomationWorkflow> => {
+  // In a real implementation, this would update the schedule in your n8n instance
+  return new Promise((resolve, reject) => {
+    const workflow = automationWorkflows.find(w => w.id === id);
+    
+    if (workflow) {
+      workflow.schedule = schedule;
+      
+      // Update the next run date based on the new schedule
+      // This is a simplified example - in a real implementation you would parse the cron expression
+      const nextRun = new Date();
+      nextRun.setDate(nextRun.getDate() + 7); // Just add 7 days for this example
+      workflow.nextRun = nextRun.toISOString();
+      
+      setTimeout(() => resolve(workflow), 500);
+    } else {
+      reject(new Error("Workflow not found"));
+    }
+  });
+};
+
+export const deleteWorkflow = async (id: string): Promise<boolean> => {
+  // In a real implementation, this would delete the workflow from your n8n instance
+  return new Promise((resolve) => {
+    const index = automationWorkflows.findIndex(w => w.id === id);
+    
+    if (index !== -1) {
+      automationWorkflows.splice(index, 1);
+      resolve(true);
+    } else {
+      resolve(false);
+    }
   });
 };
