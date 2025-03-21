@@ -11,6 +11,7 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import VerifyEmail from './pages/auth/VerifyEmail';
 import { AuthProvider, RequireAuth, RequireAdmin } from './hooks/useAuth';
+import { CartProvider } from './hooks/useCart';
 import { Toaster } from './components/ui/toaster';
 import './App.css';
 
@@ -18,27 +19,29 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={
-            <RequireAuth>
-              <Checkout />
-            </RequireAuth>
-          } />
-          <Route path="/artwork/:id" element={<ArtworkDetail />} />
-          <Route path="/admin" element={
-            <RequireAdmin>
-              <Admin />
-            </RequireAdmin>
-          } />
-          <Route path="/auth/login" element={<Login />} />
-          <Route path="/auth/register" element={<Register />} />
-          <Route path="/auth/verify" element={<VerifyEmail />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <Toaster />
+        <CartProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={
+              <RequireAuth>
+                <Checkout />
+              </RequireAuth>
+            } />
+            <Route path="/artwork/:id" element={<ArtworkDetail />} />
+            <Route path="/admin" element={
+              <RequireAdmin>
+                <Admin />
+              </RequireAdmin>
+            } />
+            <Route path="/auth/login" element={<Login />} />
+            <Route path="/auth/register" element={<Register />} />
+            <Route path="/auth/verify" element={<VerifyEmail />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Toaster />
+        </CartProvider>
       </AuthProvider>
     </Router>
   );

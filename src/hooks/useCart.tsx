@@ -4,6 +4,7 @@ import { createPrintfulOrder } from '@/utils/printful';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from './useAuth';
+import { Json } from '@/integrations/supabase/types';
 
 export interface CartItem {
   id: number;
@@ -26,13 +27,14 @@ interface CartContextType {
   checkout: (shippingInfo: ShippingInfo) => Promise<boolean>;
 }
 
-interface ShippingInfo {
+export interface ShippingInfo {
   name: string;
   address: string;
   city: string;
   state: string;
   country: string;
   zip: string;
+  [key: string]: string; // Add index signature to make it compatible with Json type
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -173,18 +175,20 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       // Insert new items
       const orderItems = items.map(item => ({
         order_id: orderId,
-        product_id: item.id,
-        variant_id: item.variantId,
+        product_id: item.id.toString(), // Convert number to string to match Supabase schema
+        variant_id: item.variantId.toString(), // Convert number to string to match Supabase schema
         quantity: item.quantity,
         price: item.price,
         size: item.size,
       }));
       
-      const { error: insertError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-      
-      if (insertError) throw insertError;
+      if (orderItems.length > 0) {
+        const { error: insertError } = await supabase
+          .from('order_items')
+          .insert(orderItems);
+        
+        if (insertError) throw insertError;
+      }
       
     } catch (error) {
       console.error('Error saving cart to database:', error);
@@ -309,11 +313,21 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         if (cartError) throw cartError;
         
         if (cart) {
+          // Convert ShippingInfo to a plain object to ensure JSON compatibility
+          const shippingAddressJson: Record<string, string> = {
+            name: shippingInfo.name,
+            address: shippingInfo.address,
+            city: shippingInfo.city,
+            state: shippingInfo.state,
+            country: shippingInfo.country,
+            zip: shippingInfo.zip
+          };
+          
           const { error: updateError } = await supabase
             .from('orders')
             .update({ 
               status: 'pending',
-              shipping_address: shippingInfo,
+              shipping_address: shippingAddressJson as Json,
               printful_order_id: printfulOrder.id.toString(),
               updated_at: new Date().toISOString()
             })
